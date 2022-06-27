@@ -1,0 +1,7 @@
+(set-option :produce-proofs true)
+(declare-const x Int)
+(declare-const y Int)
+(assert (= y 0))
+(assert (= y 1))
+(check-sat)
+(get-proof-graph)
