@@ -2,70 +2,62 @@ digraph proof {
 node_0 [shape=box,style="filled",label="false"color="red"]
 node_0 -> node_1[label="mp"];
 node_0 -> node_2[label="mp"];
-node_2 [shape=box,style="filled",label="(= (= x (+ (- 1) y)) false)"]
+node_2 [shape=box,style="filled",label="(= (= x (* (- 1) y)) false)"]
 node_2 -> node_3[label="trans"];
 node_2 -> node_4[label="trans"];
-node_4 [shape=box,style="filled",label="(= (= x (+ 43 (* (- 1) x))) false)"color="yellow"]
-node_3 [shape=box,style="filled",label="(= (= x (+ (- 1) y)) (= x (+ 43 (* (- 1) x))))"]
+node_4 [shape=box,style="filled",label="(= (= x (+ (- 44) x)) false)"color="yellow"]
+node_3 [shape=box,style="filled",label="(= (= x (* (- 1) y)) (= x (+ (- 44) x)))"]
 node_3 -> node_5[label="monotonicity"];
-node_5 [shape=box,style="filled",label="(= (+ (- 1) y) (+ 43 (* (- 1) x)))"]
+node_5 [shape=box,style="filled",label="(= (* (- 1) y) (+ (- 44) x))"]
 node_5 -> node_6[label="trans"];
 node_5 -> node_7[label="trans"];
-node_7 [shape=box,style="filled",label="(= (+ (- 1) 44 (* (- 1) x)) (+ 43 (* (- 1) x)))"color="yellow"]
-node_6 [shape=box,style="filled",label="(= (+ (- 1) y) (+ (- 1) 44 (* (- 1) x)))"]
-node_6 -> node_8[label="monotonicity"];
-node_8 [shape=box,style="filled",label="(= y (+ 44 (* (- 1) x)))"]
-node_8 -> node_9[label="trans"];
-node_8 -> node_10[label="trans"];
-node_10 [shape=box,style="filled",label="(= (- 44 x) (+ 44 (* (- 1) x)))"color="yellow"]
-node_9 [shape=box,style="filled",label="(= y (- 44 x))"]
-node_9 -> node_11[label="mp"];
-node_9 -> node_12[label="mp"];
-node_12 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= y (- 44 x)))"color="yellow"]
-node_11 [shape=box,style="filled",label="(= 44 (+ x y))"]
-node_11 -> node_13[label="mp"];
-node_11 -> node_14[label="mp"];
-node_14 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= 44 (+ x y)))"]
-node_14 -> node_15[label="monotonicity"];
-node_15 [shape=box,style="filled",label="(= (+ x y) (+ x y))"color="yellow"]
-node_13 [shape=box,style="filled",label="(= 44 (+ x y))"]
+node_7 [shape=box,style="filled",label="(= (+ (* (- 1) 44) (* (- 1) (- 1) x)) (+ (- 44) x))"]
+node_7 -> node_8[label="monotonicity"];
+node_7 -> node_9[label="monotonicity"];
+node_9 [shape=box,style="filled",label="(= (* (- 1) (- 1) x) x)"color="yellow"]
+node_8 [shape=box,style="filled",label="(= (* (- 1) 44) (- 44))"color="yellow"]
+node_6 [shape=box,style="filled",label="(= (* (- 1) y) (+ (* (- 1) 44) (* (- 1) (- 1) x)))"]
+node_6 -> node_10[label="trans"];
+node_6 -> node_11[label="trans"];
+node_11 [shape=box,style="filled",label="(= (* (- 1) (+ 44 (* (- 1) x))) (+ (* (- 1) 44) (* (- 1) (* (- 1) x))))"color="yellow"]
+node_10 [shape=box,style="filled",label="(= (* (- 1) y) (* (- 1) (+ 44 (* (- 1) x))))"]
+node_10 -> node_12[label="monotonicity"];
+node_12 [shape=box,style="filled",label="(= y (+ 44 (* (- 1) x)))"]
+node_12 -> node_13[label="trans"];
+node_12 -> node_14[label="trans"];
+node_14 [shape=box,style="filled",label="(= (- 44 x) (+ 44 (* (- 1) x)))"color="yellow"]
+node_13 [shape=box,style="filled",label="(= y (- 44 x))"]
+node_13 -> node_15[label="mp"];
 node_13 -> node_16[label="mp"];
-node_13 -> node_17[label="mp"];
-node_17 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= 44 (+ x y)))"color="yellow"]
-node_16 [shape=box,style="filled",label="(= 44 (+ x y))"]
-node_16 -> node_18[label="mp"];
-node_16 -> node_19[label="mp"];
-node_19 [shape=box,style="filled",label="(= (= z (+ x y)) (= 44 (+ x y)))"]
-node_19 -> node_20[label="monotonicity"];
-node_20 [shape=box,style="filled",label="(= z 44)"color="yellow"]
-node_18 [shape=box,style="filled",label="(= z (+ x y))"color="yellow"]
-node_1 [shape=box,style="filled",label="(= x (+ (- 1) y))"]
-node_1 -> node_21[label="mp"];
-node_1 -> node_22[label="mp"];
-node_22 [shape=box,style="filled",label="(= (= x (+ (- 1) y)) (= x (+ (- 1) y)))"]
-node_22 -> node_23[label="monotonicity"];
-node_23 [shape=box,style="filled",label="(= (+ (- 1) y) (+ (- 1) y))"color="yellow"]
-node_21 [shape=box,style="filled",label="(= x (+ (- 1) y))"]
-node_21 -> node_24[label="mp"];
-node_21 -> node_25[label="mp"];
-node_25 [shape=box,style="filled",label="(= (= x (+ (- 1) y)) (= x (+ (- 1) y)))"color="yellow"]
-node_24 [shape=box,style="filled",label="(= x (+ (- 1) y))"]
-node_24 -> node_26[label="mp"];
-node_24 -> node_27[label="mp"];
-node_27 [shape=box,style="filled",label="(= (= x (- y 1)) (= x (+ (- 1) y)))"]
-node_27 -> node_28[label="monotonicity"];
-node_28 [shape=box,style="filled",label="(= (- y 1) (+ (- 1) y))"]
-node_28 -> node_29[label="trans"];
-node_28 -> node_30[label="trans"];
-node_30 [shape=box,style="filled",label="(= (+ y (* (- 1) 1)) (+ (- 1) y))"]
-node_30 -> node_31[label="trans"];
-node_30 -> node_32[label="trans"];
-node_32 [shape=box,style="filled",label="(= (+ y (- 1)) (+ (- 1) y))"color="yellow"]
-node_31 [shape=box,style="filled",label="(= (+ y (* (- 1) 1)) (+ y (- 1)))"]
-node_31 -> node_33[label="monotonicity"];
-node_33 [shape=box,style="filled",label="(= (* (- 1) 1) (- 1))"color="yellow"]
-node_29 [shape=box,style="filled",label="(= (- y 1) (+ y (* (- 1) 1)))"color="yellow"]
-node_26 [shape=box,style="filled",label="(= x (- y 1))"color="yellow"]
+node_16 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= y (- 44 x)))"color="yellow"]
+node_15 [shape=box,style="filled",label="(= 44 (+ x y))"]
+node_15 -> node_17[label="mp"];
+node_15 -> node_18[label="mp"];
+node_18 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= 44 (+ x y)))"]
+node_18 -> node_19[label="monotonicity"];
+node_19 [shape=box,style="filled",label="(= (+ x y) (+ x y))"color="yellow"]
+node_17 [shape=box,style="filled",label="(= 44 (+ x y))"]
+node_17 -> node_20[label="mp"];
+node_17 -> node_21[label="mp"];
+node_21 [shape=box,style="filled",label="(= (= 44 (+ x y)) (= 44 (+ x y)))"color="yellow"]
+node_20 [shape=box,style="filled",label="(= 44 (+ x y))"]
+node_20 -> node_22[label="mp"];
+node_20 -> node_23[label="mp"];
+node_23 [shape=box,style="filled",label="(= (= z (+ x y)) (= 44 (+ x y)))"]
+node_23 -> node_24[label="monotonicity"];
+node_24 [shape=box,style="filled",label="(= z 44)"color="yellow"]
+node_22 [shape=box,style="filled",label="(= z (+ x y))"color="yellow"]
+node_1 [shape=box,style="filled",label="(= x (* (- 1) y))"]
+node_1 -> node_25[label="mp"];
+node_1 -> node_26[label="mp"];
+node_26 [shape=box,style="filled",label="(= (= x (* (- 1) y)) (= x (* (- 1) y)))"color="yellow"]
+node_25 [shape=box,style="filled",label="(= x (* (- 1) y))"]
+node_25 -> node_27[label="mp"];
+node_25 -> node_28[label="mp"];
+node_28 [shape=box,style="filled",label="(= (= x (- y)) (= x (* (- 1) y)))"]
+node_28 -> node_29[label="monotonicity"];
+node_29 [shape=box,style="filled",label="(= (- y) (* (- 1) y))"color="yellow"]
+node_27 [shape=box,style="filled",label="(= x (- y))"color="yellow"]
 
  } 
 

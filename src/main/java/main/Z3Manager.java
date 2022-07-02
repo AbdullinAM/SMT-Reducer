@@ -14,7 +14,6 @@ import java.nio.file.StandardOpenOption;
 import static main.Main.LOGGER;
 
 public class Z3Manager {
-    private static final String LABEL = "label=\"";
     private static final String NODE_PREFIX = "node_";
     private static final String NODE_1 = NODE_PREFIX + "1 ";
     private static final String NODE_2 = NODE_PREFIX + "2 ";
@@ -26,7 +25,7 @@ public class Z3Manager {
     public final String inputTempName;
     private final Path temp;
 
-    public Z3Manager(String inputName) {
+    private Z3Manager(String inputName) {
         inputTempName = inputName + "_temp";
         temp = RESOURCE_PATH.resolve(inputTempName);
     }
@@ -57,7 +56,7 @@ public class Z3Manager {
         }
     }
 
-    private void executeZ3(String fileName) throws IOException, InterruptedException {
+    private void execute(String fileName) throws IOException, InterruptedException {
         String[] command = {"z3", fileName};
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.redirectOutput(new File(String.valueOf(COMPILATION_RES)));
@@ -70,7 +69,7 @@ public class Z3Manager {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(NODE_1) || line.startsWith(NODE_2)) {
-                    contradiction = getLabel(line);
+                    contradiction = Utils.getLabel(line);
                     break;
                 }
             }
@@ -81,23 +80,10 @@ public class Z3Manager {
         return contradiction;
     }
 
-    private static String getLabel(String line) {
-        int labelIndex = line.indexOf(LABEL);
-        int lastQuoteIndex = line.lastIndexOf("\"");
-        String contradiction = line.substring(labelIndex + LABEL.length(), lastQuoteIndex);
-        int indexOfFalse = contradiction.lastIndexOf("false");
-        if (indexOfFalse == -1) {
-            return contradiction;
-        }
-        String str = "(=";
-        int startIndex = contradiction.indexOf(str) + str.length();
-        return contradiction.substring(startIndex, indexOfFalse - 1).trim();
-    }
-
-    private boolean fallWithNewConfiguration(
+    public boolean fallWithNewConfiguration(
             Node tree, String contradiction) throws IOException, InterruptedException {
         writeTreeBackToFile(tree);
-        executeZ3(inputTempName);
+        execute(inputTempName);
         try (BufferedReader reader = Files.newBufferedReader(COMPILATION_RES)) {
             String line;
             int i = 0;
@@ -120,19 +106,20 @@ public class Z3Manager {
 
     public static void minimize(String input) throws IOException, InterruptedException {
         Z3Manager z3Manager = new Z3Manager(input);
-        executeZ3(input);
+        z3Manager.execute(input);
         String contradiction = getContradiction();
-        Files.copy(RESOURCE_PATH.resolve(input), temp, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(RESOURCE_PATH.resolve(input), z3Manager.temp, StandardCopyOption.REPLACE_EXISTING);
 
-        try (InputStream inputStream = Files.newInputStream(temp)) {
+        try (InputStream inputStream = Files.newInputStream(z3Manager.temp)) {
             SMTLIBLexer lexer = new SMTLIBLexer(CharStreams.fromStream(inputStream));
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             SMTLIBParser parser = new SMTLIBParser(tokens);
             parser.setBuildParseTree(true);
             Node treeRoot = Node.from(parser.script());
 
-            HDD.hdd(treeRoot, contradiction);
-            writeTreeBackToFile(treeRoot);
+            HDDManager hddManager = new HDDManager(z3Manager);
+            hddManager.hdd(treeRoot, contradiction);
+            z3Manager.writeTreeBackToFile(treeRoot);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

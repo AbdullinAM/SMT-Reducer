@@ -6,10 +6,10 @@ import java.util.List;
 
 import static main.Main.LOGGER;
 
-public final class HDD {
+public final class HDDManager {
     private final Z3Manager z3Manager;
 
-    public HDD(Z3Manager z3Manager) {
+    public HDDManager(Z3Manager z3Manager) {
         this.z3Manager = z3Manager;
     }
 
@@ -27,7 +27,7 @@ public final class HDD {
         }
     }
 
-    private static void filterChildNodes(Node tree, List<Node> levelNodes) {
+    private static void filterChildNodes(Node tree, List<Node> levelNodes) {//FIXME
         List<Node> children = tree.children();
         for (Node node : children) {
             if (unavailableToOptimize(node)) {
@@ -37,7 +37,7 @@ public final class HDD {
         }
     }
 
-    private static boolean unavailableToOptimize(Node node) {
+    private static boolean unavailableToOptimize(Node node) {//FIXME
         String stringNode = node.toString();
         return stringNode.equals("(")
                 || stringNode.equals(")")
@@ -45,20 +45,17 @@ public final class HDD {
                 || stringNode.contains("check-sat");
     }
 
-    private static void ddMin(
+    private void ddMin(
             List<Node> levelNodes, Node tree, String contradiction) throws IOException, InterruptedException {
         int n = 2;
         while (levelNodes.size() > 1) {
-            List<List<Node>> parts = split(levelNodes, n);
+            List<List<Node>> parts = Utils.split(levelNodes, n);
             boolean configurationFailed = false;
             for (List<Node> part : parts) {
                 LOGGER.info("Start removing:");
-                for (Node node : part) {
-                    LOGGER.info(String.valueOf(node));
-                    node.parent().children().set(node.indexInParent(), null);
-                }
+                removePart(part);
                 LOGGER.info("End removing");
-                if (fallWithNewConfiguration(tree, contradiction)) {
+                if (z3Manager.fallWithNewConfiguration(tree, contradiction)) {
                     n = Math.max(n - 1, 2);
                     LOGGER.info("Good, we can ignore this part");
                     levelNodes.removeAll(part);
@@ -80,14 +77,10 @@ public final class HDD {
         }
     }
 
-    private static List<List<Node>> split(List<Node> s, int n) {
-        List<List<Node>> subsets = new ArrayList<>();
-        int position = 0;
-        for (int i = 0; i < n; i++) {
-            List<Node> subset = s.subList(position, position + (s.size() - position) / (n - i));
-            subsets.add(subset);
-            position += subset.size();
+    private void removePart(List<Node> part) {
+        for (Node node : part) {
+            LOGGER.info(String.valueOf(node));
+            node.parent().children().set(node.indexInParent(), null);
         }
-        return subsets;
     }
 }

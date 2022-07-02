@@ -14,7 +14,7 @@ public class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-
+        Z3Manager.minimize("input");
     }
 
     private static void paint(SMTLIBParser parser, SMTLIBParser.ScriptContext tree) {
