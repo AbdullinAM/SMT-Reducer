@@ -1,12 +1,13 @@
 package main;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static main.Main.LOGGER;
 
-public final class HDDManager {
+public class HDDManager {
+    private static final long TIMEOUT_MILLIS = 2 * 1000L;
     private final Z3Manager z3Manager;
 
     public HDDManager(Z3Manager z3Manager) {
@@ -14,10 +15,18 @@ public final class HDDManager {
     }
 
     public void hdd(Node tree, String contradiction) throws IOException, InterruptedException {
-        List<Node> levelNodes = new ArrayList<>();
-        filterChildNodes(tree, levelNodes);
+        long start = System.currentTimeMillis();
+        List<Node> levelNodes = filterMandatoryCommands(tree);
+        boolean finished = ddMin(levelNodes, tree, contradiction, start);
+        if (!finished) {
+            return;
+        }
+        levelNodes = filterNonAsserts(levelNodes);
         while (!levelNodes.isEmpty()) {
-            ddMin(levelNodes, tree, contradiction);
+            finished = ddMin(levelNodes, tree, contradiction, start);
+            if (!finished) {
+                return;
+            }
             int levelSize = levelNodes.size();
             for (int i = 0; i < levelSize; i++) {
                 Node node = levelNodes.get(i);
@@ -27,7 +36,21 @@ public final class HDDManager {
         }
     }
 
-    private static void filterChildNodes(Node tree, List<Node> levelNodes) {//FIXME
+    private List<Node> filterNonAsserts(List<Node> levelNodes) {
+        int levelSize = levelNodes.size();
+        for (int i = 0; i < levelSize; i++) {
+            Node node = levelNodes.get(i);
+            String command = node.children().get(1).toString().trim();
+            if (!command.equals("assert") && !command.equals("let")) {
+                continue;
+            }
+            filterChildNodes(node, levelNodes);
+        }
+        levelNodes = levelNodes.subList(levelSize, levelNodes.size());
+        return levelNodes;
+    }
+
+    private void filterChildNodes(Node tree, List<Node> levelNodes) {
         List<Node> children = tree.children();
         for (Node node : children) {
             if (unavailableToOptimize(node)) {
@@ -37,21 +60,38 @@ public final class HDDManager {
         }
     }
 
-    private static boolean unavailableToOptimize(Node node) {//FIXME
-        String stringNode = node.toString();
+    private static boolean unavailableToOptimize(Node node) {
+        String stringNode = node.toString().trim();
         return stringNode.equals("(")
                 || stringNode.equals(")")
-                || stringNode.contains("get-proof-graph")
-                || stringNode.contains("check-sat");
+                || stringNode.equals("assert");
     }
 
-    private void ddMin(
-            List<Node> levelNodes, Node tree, String contradiction) throws IOException, InterruptedException {
+    private List<Node> filterMandatoryCommands(Node tree) {
+        return tree
+                .children()
+                .stream()
+                .filter(node -> {
+                    String stringNode = node.toString();
+                    return !(
+                            stringNode.contains("get-proof-graph") ||
+                                    stringNode.contains("check-sat") ||
+                                    stringNode.contains("produce-proofs"));
+                })
+                .collect(Collectors.toList());
+    }
+
+    private boolean ddMin(
+            List<Node> levelNodes, Node tree, String contradiction, long start) throws IOException, InterruptedException {
         int n = 2;
         while (levelNodes.size() > 1) {
             List<List<Node>> parts = Utils.split(levelNodes, n);
             boolean configurationFailed = false;
             for (List<Node> part : parts) {
+                if (System.currentTimeMillis() - start >= TIMEOUT_MILLIS) {
+                    LOGGER.info("TIMEOUT HDD");
+                    return false;
+                }
                 LOGGER.info("Start removing:");
                 removePart(part);
                 LOGGER.info("End removing");
@@ -75,6 +115,7 @@ public final class HDDManager {
                 n = Math.min(n * 2, levelNodes.size());
             }
         }
+        return true;
     }
 
     private void removePart(List<Node> part) {

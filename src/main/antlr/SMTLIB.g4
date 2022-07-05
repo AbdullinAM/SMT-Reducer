@@ -29,7 +29,9 @@
 
 grammar SMTLIB;
 // Lexer Rules Start
-
+@header {
+    package generated;
+}
 
 Comment
     : Semicolon ~[\r\n]* -> skip
@@ -473,6 +475,9 @@ PK_Verbosity
 PK_Version
     : ':version'
     ;
+PK_Weight
+    : ':weight'
+    ;
 
 UndefinedSymbol:
     Sym (Digit | Sym)*;
@@ -578,6 +583,7 @@ predefKeyword
     | PK_Values
     | PK_Verbosity
     | PK_Version
+    | PK_Weight
     ;
 
 

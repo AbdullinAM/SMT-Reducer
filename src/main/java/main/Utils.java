@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class Utils {
+    private static final String LABEL = "label=\"";
+
     private Utils() {
 
     }
-
-    private static final String LABEL = "label=\"";
 
     public static String getLabel(String line) {
         int labelIndex = line.indexOf(LABEL);

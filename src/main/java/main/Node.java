@@ -5,7 +5,19 @@ import org.antlr.v4.runtime.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 
-public record Node(Tree tree, main.Node parent, List<Node> children, int indexInParent) {
+public final class Node {
+    private final Tree tree;
+    private final Node parent;
+    private final List<Node> children;
+    private final int indexInParent;
+    private String stringNode;
+
+    public Node(Tree tree, Node parent, List<Node> children, int indexInParent) {
+        this.tree = tree;
+        this.parent = parent;
+        this.children = children;
+        this.indexInParent = indexInParent;
+    }
 
     public static Node from(Tree tree) {
         Node root = new Node(tree, null, new ArrayList<>(tree.getChildCount()), -1);
@@ -24,9 +36,13 @@ public record Node(Tree tree, main.Node parent, List<Node> children, int indexIn
 
     @Override
     public String toString() {
+        if (stringNode != null) {
+            return stringNode;
+        }
         StringBuilder res = new StringBuilder();
         walkTree(res, this);
-        return res.toString();
+        stringNode = res.toString();
+        return stringNode;
     }
 
     private void walkTree(StringBuilder res, Node subTree) {
@@ -40,5 +56,21 @@ public record Node(Tree tree, main.Node parent, List<Node> children, int indexIn
         for (int i = 0; i < subTree.children().size(); i++) {
             walkTree(res, subTree.children().get(i));
         }
+    }
+
+    public Tree tree() {
+        return tree;
+    }
+
+    public Node parent() {
+        return parent;
+    }
+
+    public List<Node> children() {
+        return children;
+    }
+
+    public int indexInParent() {
+        return indexInParent;
     }
 }
