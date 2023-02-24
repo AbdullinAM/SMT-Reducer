@@ -1,37 +1,31 @@
-package main;
+package org.vorpal.research.smtreducer;
 
 import generated.SMTLIBLexer;
 import generated.SMTLIBParser;
-import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 
-import static main.Main.LOGGER;
+import static org.vorpal.research.smtreducer.Main.LOGGER;
 
 public class Z3Manager {
     private static final String NODE_PREFIX = "node_";
     private static final String NODE_1 = NODE_PREFIX + "1 ";
     private static final String NODE_2 = NODE_PREFIX + "2 ";
-    private static final String SOLVER_RES_PATH = "res";
+    private static final String SOLVER_OUTPUT = "solver_output";
     private static final String SIMPLIFIED = "_simplified";
-    private static final Path GRAPH_FILE_NAME = Path.of("proof.dot");
-    private static final Path PROJECT_DIR = Path.of(System.getProperty("user.dir"));
-    public static final Path RESOURCE_PATH
-            = PROJECT_DIR.resolve(Path.of("src" + File.separator + "main" + File.separator + "resources"));
-    private static final Path COMPILATION_RES = RESOURCE_PATH.resolve(SOLVER_RES_PATH);
-    public final Path inputFile;
+    private static final String PROOF_FILE = "proof.dot";
+
+    private final Path workingDir;
     private final Path temp;
 
     private Z3Manager(Path input) {
-        inputFile = input;
+        workingDir = input.getParent();
         temp = withSuffix(input, "_temp");
     }
 
@@ -64,13 +58,15 @@ public class Z3Manager {
     private void execute(Path file) throws IOException, InterruptedException {
         String[] command = {"z3", file.getFileName().toString()};
         ProcessBuilder builder = new ProcessBuilder(command);
-        builder.redirectOutput(new File(String.valueOf(COMPILATION_RES)));
-        builder.directory(new File(file.getParent().toString())).start().waitFor();
+        builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+        Path solverOutput = workingDir.resolve(SOLVER_OUTPUT);
+        builder.redirectOutput(solverOutput.toFile());
+        builder.directory(file.getParent().toFile()).start().waitFor();
     }
 
-    private static String getContradiction(Path inputFile) throws IOException {
+    private String getContradiction() throws IOException {
         String contradiction = null;
-        try (BufferedReader reader = Files.newBufferedReader(inputFile.getParent().resolve(GRAPH_FILE_NAME))) {
+        try (BufferedReader reader = Files.newBufferedReader(workingDir.resolve(PROOF_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(NODE_1) || line.startsWith(NODE_2)) {
@@ -89,7 +85,7 @@ public class Z3Manager {
         writeTreeBackToFile(tree);
         execute(temp);
         if (logIsValid()) {
-            String newContradiction = getContradiction(temp);
+            String newContradiction = getContradiction();
             LOGGER.info("New contradiction {}", newContradiction);
             boolean equals = newContradiction.equals(contradiction);
             LOGGER.info("Is equals with initial contradiction ({}) ", equals);
@@ -99,7 +95,7 @@ public class Z3Manager {
     }
 
     private boolean logIsValid() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(COMPILATION_RES)) {
+        try (BufferedReader reader = Files.newBufferedReader(workingDir.resolve(SOLVER_OUTPUT))) {
             String line;
             int i = 0;
             boolean unsat = false;
@@ -117,15 +113,13 @@ public class Z3Manager {
     }
 
     public static Path minimize(Path file) throws IOException, InterruptedException {
-        Files.deleteIfExists(file.getParent().resolve(GRAPH_FILE_NAME));
-        Files.deleteIfExists(COMPILATION_RES);
         Z3Manager z3Manager = new Z3Manager(file);
         z3Manager.execute(file);
         if (!z3Manager.logIsValid()) {
             LOGGER.error("Formula is not unsat or wrong on file {}", file);
             return null;
         }
-        String contradiction = getContradiction(file);
+        String contradiction = z3Manager.getContradiction();
         Files.copy(file, z3Manager.temp, StandardCopyOption.REPLACE_EXISTING);
 
         try (InputStream inputStream = Files.newInputStream(z3Manager.temp)) {
@@ -144,6 +138,7 @@ public class Z3Manager {
             throw new RuntimeException(e);
         }
     }
+
     private static Path withSuffix(Path path, String suffix) {
         return path.resolveSibling(path.getFileName().toString() + suffix);
     }

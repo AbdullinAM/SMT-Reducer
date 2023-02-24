@@ -1,13 +1,13 @@
-package main;
+package org.vorpal.research.smtreducer;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.Main.LOGGER;
+import static org.vorpal.research.smtreducer.Main.LOGGER;
 
 public class HDDManager {
-    private static final long TIMEOUT_MILLIS = 2 * 1000L;
+    private static final long TIMEOUT_MILLIS = 200 * 1000L;
     private final Z3Manager z3Manager;
 
     public HDDManager(Z3Manager z3Manager) {

@@ -1,4 +1,4 @@
-package main;
+package org.vorpal.research.smtreducer;
 
 import org.antlr.v4.runtime.tree.Tree;
 

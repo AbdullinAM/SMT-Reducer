@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'antlr'
+    id 'application'
 }
 
 group 'org.example'
@@ -32,4 +33,8 @@ generateGrammarSource {
         }
         delete("${buildDir}/generated-src/antlr/main")
     }
+}
+
+application {
+    mainClass.set("org.vorpal.research.smtreducer.Main")
 }
