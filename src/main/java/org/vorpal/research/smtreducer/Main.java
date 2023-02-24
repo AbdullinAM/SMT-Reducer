@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,10 +25,10 @@ public class Main {
     private static final String GET_PROOF_GRAPH = "(get-proof-graph)";
 
     public static void main(String[] args) {
-        test(Paths.get(args[0]));
+        test(Paths.get(args[0]), Duration.ofSeconds(Long.parseLong(args[1])));
     }
 
-    private static void test(Path path) {
+    private static void test(Path path, Duration timeout) {
         List<Double> percentages = new ArrayList<>();
         AtomicInteger count = new AtomicInteger();
         if (count.getAndIncrement() >= 10) {
@@ -37,7 +38,7 @@ public class Main {
             Path tempDir = Files.createTempDirectory("smt-reducer");
             Path appendedFile = tempDir.resolve(path.getFileName());
             rewriteFiles(path, appendedFile);
-            Path res = Z3Manager.minimize(appendedFile);
+            Path res = Z3Manager.minimize(appendedFile, timeout);
             if (res == null) {
                 LOGGER.info("There was sat formula");
             } else {

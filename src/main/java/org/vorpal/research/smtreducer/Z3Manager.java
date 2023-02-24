@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 
 import static org.vorpal.research.smtreducer.Main.LOGGER;
 
@@ -58,7 +59,6 @@ public class Z3Manager {
     private void execute(Path file) throws IOException, InterruptedException {
         String[] command = {"z3", file.getFileName().toString()};
         ProcessBuilder builder = new ProcessBuilder(command);
-        builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
         Path solverOutput = workingDir.resolve(SOLVER_OUTPUT);
         builder.redirectOutput(solverOutput.toFile());
         builder.directory(file.getParent().toFile()).start().waitFor();
@@ -112,7 +112,7 @@ public class Z3Manager {
         }
     }
 
-    public static Path minimize(Path file) throws IOException, InterruptedException {
+    public static Path minimize(Path file, Duration timeout) throws IOException, InterruptedException {
         Z3Manager z3Manager = new Z3Manager(file);
         z3Manager.execute(file);
         if (!z3Manager.logIsValid()) {
@@ -128,7 +128,7 @@ public class Z3Manager {
             SMTLIBParser parser = new SMTLIBParser(tokens);
             parser.setBuildParseTree(true);
             Node treeRoot = Node.from(parser.script());
-            HDDManager hddManager = new HDDManager(z3Manager);
+            HDDManager hddManager = new HDDManager(z3Manager, timeout);
             hddManager.hdd(treeRoot, contradiction);
             z3Manager.writeTreeBackToFile(treeRoot);
             Path res = withSuffix(file, SIMPLIFIED);

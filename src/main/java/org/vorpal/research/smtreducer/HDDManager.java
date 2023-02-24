@@ -1,17 +1,22 @@
 package org.vorpal.research.smtreducer;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.vorpal.research.smtreducer.Main.LOGGER;
 
 public class HDDManager {
-    private static final long TIMEOUT_MILLIS = 200 * 1000L;
     private final Z3Manager z3Manager;
+    private final Duration timeout;
 
     public HDDManager(Z3Manager z3Manager) {
+        this(z3Manager, Duration.ofSeconds(100));
+    }
+    public HDDManager(Z3Manager z3Manager, Duration timeout) {
         this.z3Manager = z3Manager;
+        this.timeout = timeout;
     }
 
     public void hdd(Node tree, String contradiction) throws IOException, InterruptedException {
@@ -82,13 +87,17 @@ public class HDDManager {
     }
 
     private boolean ddMin(
-            List<Node> levelNodes, Node tree, String contradiction, long start) throws IOException, InterruptedException {
+            List<Node> levelNodes,
+            Node tree,
+            String contradiction,
+            long start
+    ) throws IOException, InterruptedException {
         int n = 2;
         while (levelNodes.size() > 1) {
             List<List<Node>> parts = Utils.split(levelNodes, n);
             boolean configurationFailed = false;
             for (List<Node> part : parts) {
-                if (System.currentTimeMillis() - start >= TIMEOUT_MILLIS) {
+                if (System.currentTimeMillis() - start >= timeout.toMillis()) {
                     LOGGER.info("TIMEOUT HDD");
                     return false;
                 }
