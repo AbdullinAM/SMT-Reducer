@@ -4,7 +4,7 @@ Very simple delta debugging tool for SMT formulae based on hierarchical delta de
 
 ## Usage
 ```
-./gradlew run --args="formulae timeout mode [optional mode arguments]
+./gradlew run --args="formulae timeout mode [optional mode arguments]"
 ```
 
 Options:
