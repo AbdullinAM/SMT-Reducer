@@ -1,4 +1,4 @@
-package org.vorpal.research.smtreducer;
+package org.vorpal.research.smtreducer.hdd;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.vorpal.research.smtreducer;
+package org.vorpal.research.smtreducer.hdd;
 
 import org.antlr.v4.runtime.tree.Tree;
 
@@ -10,7 +10,6 @@ public final class Node {
     private final Node parent;
     private final List<Node> children;
     private final int indexInParent;
-    private String stringNode;
 
     public Node(Tree tree, Node parent, List<Node> children, int indexInParent) {
         this.tree = tree;
@@ -36,13 +35,12 @@ public final class Node {
 
     @Override
     public String toString() {
-        if (stringNode != null) {
-            return stringNode;
-        }
         StringBuilder res = new StringBuilder();
-        walkTree(res, this);
-        stringNode = res.toString();
-        return stringNode;
+        for (Node subTree : this.children()) {
+            walkTree(res, subTree);
+            res.append("\n");
+        }
+        return res.toString();
     }
 
     private void walkTree(StringBuilder res, Node subTree) {

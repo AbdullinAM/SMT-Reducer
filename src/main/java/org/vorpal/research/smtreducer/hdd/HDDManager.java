@@ -1,34 +1,37 @@
-package org.vorpal.research.smtreducer;
+package org.vorpal.research.smtreducer.hdd;
 
-import java.io.IOException;
+import org.vorpal.research.smtreducer.condition.ConditionChecker;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.vorpal.research.smtreducer.Main.LOGGER;
 
+@SuppressWarnings("unused")
 public class HDDManager {
-    private final Z3Manager z3Manager;
+
+    private final ConditionChecker checker;
     private final Duration timeout;
 
-    public HDDManager(Z3Manager z3Manager) {
-        this(z3Manager, Duration.ofSeconds(100));
+    public HDDManager(ConditionChecker checker) {
+        this(checker, Duration.ofSeconds(100));
     }
-    public HDDManager(Z3Manager z3Manager, Duration timeout) {
-        this.z3Manager = z3Manager;
+    public HDDManager(ConditionChecker checker, Duration timeout) {
+        this.checker = checker;
         this.timeout = timeout;
     }
 
-    public void hdd(Node tree, String contradiction) throws IOException, InterruptedException {
+    public void hdd(Node tree) {
         long start = System.currentTimeMillis();
         List<Node> levelNodes = filterMandatoryCommands(tree);
-        boolean finished = ddMin(levelNodes, tree, contradiction, start);
+        boolean finished = ddMin(levelNodes, tree, start);
         if (!finished) {
             return;
         }
         levelNodes = filterNonAsserts(levelNodes);
         while (!levelNodes.isEmpty()) {
-            finished = ddMin(levelNodes, tree, contradiction, start);
+            finished = ddMin(levelNodes, tree, start);
             if (!finished) {
                 return;
             }
@@ -89,9 +92,8 @@ public class HDDManager {
     private boolean ddMin(
             List<Node> levelNodes,
             Node tree,
-            String contradiction,
             long start
-    ) throws IOException, InterruptedException {
+    ) {
         int n = 2;
         while (levelNodes.size() > 1) {
             List<List<Node>> parts = Utils.split(levelNodes, n);
@@ -104,16 +106,14 @@ public class HDDManager {
                 LOGGER.info("Start removing:");
                 removePart(part);
                 LOGGER.info("End removing");
-                if (z3Manager.fallWithNewConfiguration(tree, contradiction)) {
+                if (checker.isPreserved(tree)) {
                     n = Math.max(n - 1, 2);
                     LOGGER.info("Good, we can ignore this part");
                     levelNodes.removeAll(part);
                     configurationFailed = true;
                     break;
                 }
-                for (Node node : part) {
-                    node.parent().children().set(node.indexInParent(), node);
-                }
+                returnPart(part);
             }
             if (!configurationFailed) {
                 if (n == levelNodes.size()) {
@@ -131,6 +131,12 @@ public class HDDManager {
         for (Node node : part) {
             LOGGER.info(String.valueOf(node));
             node.parent().children().set(node.indexInParent(), null);
+        }
+    }
+
+    private void returnPart(List<Node> part) {
+        for (Node node : part) {
+            node.parent().children().set(node.indexInParent(), node);
         }
     }
 }
