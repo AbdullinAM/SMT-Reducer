@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%-5p] - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="asyncStdout" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="stdout"/>
+    </appender>
+
+    <logger name="org.vorpal.research.smtreducer" level="ALL" additivity="false">
+        <appender-ref ref="asyncStdout"/>
+    </logger>
+
+    <root level="ALL">
+        <appender-ref ref="async"/>
+    </root>
+
+</configuration>

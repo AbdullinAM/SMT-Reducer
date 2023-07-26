@@ -21,23 +21,23 @@ public class Main {
     private static final String EXTENSION = ".smt2";
     public static final String SUFFIX = "_reduced" + EXTENSION;
 
-    static enum Mode {
+    enum Mode {
         PROOF,
-        TIMEOUT;
+        TIMEOUT
     }
 
     public static void main(String[] args) {
         Path inputFile = Paths.get(args[0]);
         Duration ddTimeout = Duration.ofSeconds(Long.parseLong(args[1]));
         Mode mode = Mode.valueOf(args[2].toUpperCase());
+        Duration formulaeTimeout = Duration.ofSeconds(Long.parseLong(args[3]));
 
         ConditionChecker checker;
         switch (mode) {
             case PROOF:
-                checker = new ProofConditionChecker(inputFile);
+                checker = new ProofConditionChecker(inputFile, formulaeTimeout);
                 break;
             case TIMEOUT:
-                Duration formulaeTimeout = Duration.ofSeconds(Long.parseLong(args[3]));
                 checker = new TimeoutChecker(inputFile, formulaeTimeout);
                 break;
             default:

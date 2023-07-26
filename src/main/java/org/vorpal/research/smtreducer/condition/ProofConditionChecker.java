@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.Duration;
 import java.util.List;
 
 import static org.vorpal.research.smtreducer.Main.LOGGER;
@@ -26,7 +27,10 @@ public class ProofConditionChecker implements ConditionChecker {
     private final Path workingDir;
     private final String proofCondition;
 
-    public ProofConditionChecker(Path input) {
+    private final Duration formulaeTimeout;
+
+    public ProofConditionChecker(Path input, Duration timeout) {
+        formulaeTimeout = timeout;
         workingFile = initializeWorkingFile(input);
         workingDir = workingFile.getParent();
         execute(workingFile);
@@ -35,14 +39,14 @@ public class ProofConditionChecker implements ConditionChecker {
 
     private void execute(Path file) {
         try {
-            String[] command = {"z3", file.getFileName().toString()};
+            String[] command = {"z3", "-T:" + formulaeTimeout.getSeconds(), file.getFileName().toString()};
             ProcessBuilder builder = new ProcessBuilder(command);
             Path solverOutput = workingDir.resolve(SOLVER_OUTPUT);
             Path solverError = workingDir.resolve(SOLVER_OUTPUT);
             builder.redirectOutput(solverOutput.toFile());
             builder.redirectError(solverError.toFile());
             builder.directory(file.getParent().toFile()).start().waitFor();
-        } catch (IOException|InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new IllegalStateException();
         }
     }
